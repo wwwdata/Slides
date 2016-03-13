@@ -1,0 +1,196 @@
+Functional Javascript
+15 Mar 2016
+JS Coding Nights
+
+Ben Bieker
+ben@bieker.ninja
+https://bieker.ninja
+@Blackgentoo
+
+* About me
+
+.image ./img/avatar.png _ 300
+
+- Likes ES2015/2016 Features
+- Also developing stuff with the Go Language
+- Always curious and interested in how to write better code, that's why this talk happened.
+
+* Different programming paradigms
+	some code block func(*) {};
+
+* Object Oriented Example
+* Object Oriented Example from Professor Frisby
+	var Flock = function(n) {
+	  this.seagulls = n;
+	};
+
+	Flock.prototype.conjoin = function(other) {
+	  this.seagulls += other.seagulls;
+	  return this;
+	};
+
+	Flock.prototype.breed = function(other) {
+	  this.seagulls = this.seagulls * other.seagulls;
+	  return this;
+	};
+
+	var flock_a = new Flock(4);
+	var flock_b = new Flock(2);
+	var flock_c = new Flock(0);
+
+	var result = flock_a.conjoin(flock_c)
+		.breed(flock_b).conjoin(flock_a.breed(flock_b)).seagulls;
+	//=> 32
+If you guessed 16, you're wrong because state got mutated internally in flock_a
+
+* Functional version
+	var add = function(x, y) { return x + y; };
+	var multiply = function(x, y) { return x * y; };
+
+	var flock_a = 4;
+	var flock_b = 2;
+	var flock_c = 0;
+
+	var result = add(
+	  multiply(flock_b, add(flock_a, flock_c)), multiply(flock_a, flock_b)
+	);
+	//=>16
+
+* Remember some basic mathematical laws
+	// associative
+	add(add(x, y), z) === add(x, add(y, z));
+
+	// commutative
+	add(x, y) === add(y, x);
+
+	// identity
+	add(x, 0) === x;
+
+	// distributive
+	multiply(x, add(y,z)) === add(multiply(x, y), multiply(x, z));
+
+* Refactoring
+	// Original line
+	add(multiply(flock_b, add(flock_a, flock_c)), multiply(flock_a, flock_b));
+
+	// Apply the identity property to remove the extra add
+	// (add(flock_a, flock_c) == flock_a)
+	add(multiply(flock_b, flock_a), multiply(flock_a, flock_b));
+
+	// Apply distributive property to achieve our result
+	multiply(flock_b, add(flock_a, flock_a));
+
+* First Class Functions
+* First Class Functions
+*first*class* just means that functions are treated like everything else
+
+- Can be sotred in variables/arrays
+- Can be apssed around
+- Returned and so on...
+
+	var hello = function(name) {
+	  return `Hello ${name}`;
+	}
+	hello; // Prints out function body
+	hello('peter'); // Invokes function -> Hello peter
+
+* Pure Functions
+* Pure Functions
+
+A pure function is a function where the return value is only determined by its input values, without observable side effects.
+
+* Pure Function Example
+Pure Function
+	
+	function add(a, b) {
+		return a + b;
+	}
+	// Pure, always returns the same result
+	add(1,2); // => 3
+	add(1,2); // => 3
+
+Dirty Function
+	
+	var count = 0;
+	function add(a, b) {
+		return count += a + b;
+	}
+	// Not pure, function uses some state
+	add(1,2) // => 3
+	add(1,2) // => 6
+
+* Side Effects
+- changing the file system
+- inserting a record into a database
+- making an http call
+- mutations
+- printing to the screen / logging
+- obtaining user input
+- querying the DOM
+- accessing system state
+
+* Advantages of pure functions
+* Always Cacheable
+	var memoize = function(f) {
+	  var cache = {};
+
+	  return function() {
+		var arg_str = JSON.stringify(arguments);
+		cache[arg_str] = cache[arg_str] || f.apply(f, arguments);
+		return cache[arg_str];
+	  };
+	};
+
+	var squareNumber = memoize(function(x) {
+		return x * x;
+	});
+
+	squareNumber(4); // => 16
+	squareNUmber(4); // => 16 out of the cache for the same input
+
+* Self-Documenting
+Everything that a function needs is passed right into it. There are no hidden dependencies.
+
+Impure, we don't know that the function is up to only by looking at it's attributes
+
+	var signUp = function(attrs) {
+	  var user = saveUser(attrs);
+	  welcomeUser(user);
+	};
+
+Pure, we can look at attributes and now what's going on
+
+	var signUp = function(Db, Email, attrs) {
+	  return function() {
+		var user = saveUser(Db, attrs);
+		welcomeUser(Email, user);
+	  };
+	};
+
+* Joe Armstrong
+_The_problem_with_object-oriented_languages_is_they’ve_got_all_this_implicit_environment_that_they_carry_around_with_them._You_wanted_a_banana_but_what_you_got_was_a_gorilla_holding_the_banana..._and_the_entire_jungle_
+
+* Testable
+Pure function can be tested easily, obviously. No need to *mock* some other stateful services that are used by impure functions.
+
+* Parallel Code
+No race conditions can occur when pure functions are run in parallel, because they access no shared memory.
+
+* Higher Order Functions
+* Higher Order Functions
+In mathematics and computer science, a higher-order function (also functional, functional form or functor; not to be confused with the functor concept in category theory) is a function that does at least one of the following:
+
+- takes one or more functions as arguments,
+- returns a function as its result.
+
+* Currying
+* Currying
+The wonderful currying
+must go on and stuff
+
+* Workshop
+   npm install -g functional-javascript-workshop@latest
+
+* References
+[[https://drboolean.gitbooks.io/mostly-adequate-guide]]
+[[http://eloquentjavascript.net/1st_edition/chapter6.html]]
